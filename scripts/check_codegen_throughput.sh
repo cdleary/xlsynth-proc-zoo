@@ -3,10 +3,10 @@ set -euo pipefail
 
 source "$(dirname "$0")/common.sh"
 
-SINGLE_DSLX="${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single.x"
-SINGLE_IR="${BUILD_DIR}/fetch_relu_single.ir"
-SINGLE_WCT1_STDOUT="${BUILD_DIR}/fetch_relu_single_wct1.stdout"
-SINGLE_WCT1_STDERR="${BUILD_DIR}/fetch_relu_single_wct1.stderr"
+SEQUENTIAL_DSLX="${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_sequential.x"
+SEQUENTIAL_IR="${BUILD_DIR}/fetch_relu_sequential.ir"
+SEQUENTIAL_WCT1_STDOUT="${BUILD_DIR}/fetch_relu_sequential_wct1.stdout"
+SEQUENTIAL_WCT1_STDERR="${BUILD_DIR}/fetch_relu_sequential_wct1.stderr"
 
 SINGLE_PIPELINED_DSLX="${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_pipelined.x"
 SINGLE_PIPELINED_IR="${BUILD_DIR}/fetch_relu_single_pipelined.ir"
@@ -26,30 +26,30 @@ RECV_IR="${BUILD_DIR}/fetch_relu_split_recv_relu.ir"
 SEND_SV="${BUILD_DIR}/fetch_relu_split_send_addr.sv"
 RECV_SV="${BUILD_DIR}/fetch_relu_split_recv_relu.sv"
 
-echo "== IR convert: single proc"
+echo "== IR convert: sequential single proc"
 "${TOOLS_DIR}/ir_converter_main" \
-  "${SINGLE_DSLX}" \
-  --top=FetchReluSingle \
+  "${SEQUENTIAL_DSLX}" \
+  --top=FetchReluSequential \
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
-  --output_file="${SINGLE_IR}"
+  --output_file="${SEQUENTIAL_IR}"
 
-echo "== Codegen check: single proc at worst_case_throughput=1 (expected to fail)"
+echo "== Codegen check: sequential single proc at worst_case_throughput=1 (expected to fail)"
 if "${TOOLS_DIR}/codegen_main" \
-    "${SINGLE_IR}" \
-    --top=__fetch_relu_single__FetchReluSingle_0_next \
+    "${SEQUENTIAL_IR}" \
+    --top=__fetch_relu_sequential__FetchReluSequential_0_next \
     --generator=pipeline \
     --pipeline_stages=1 \
     --clock_period_ps=1000 \
     --delay_model=unit \
     --use_system_verilog \
     --worst_case_throughput=1 \
-    --output_verilog_path="${BUILD_DIR}/fetch_relu_single_wct1_should_fail.sv" \
-    >"${SINGLE_WCT1_STDOUT}" 2>"${SINGLE_WCT1_STDERR}"
+    --reset=rst \
+    --output_verilog_path="${BUILD_DIR}/fetch_relu_sequential_wct1_should_fail.sv" \
+    >"${SEQUENTIAL_WCT1_STDOUT}" 2>"${SEQUENTIAL_WCT1_STDERR}"
 then
-  echo "single-proc codegen unexpectedly succeeded at worst_case_throughput=1" >&2
+  echo "sequential single-proc codegen unexpectedly succeeded at worst_case_throughput=1" >&2
   exit 1
 fi
 
@@ -60,7 +60,6 @@ echo "== IR convert: single software-pipelined proc"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${SINGLE_PIPELINED_IR}"
 
 echo "== Codegen check: single software-pipelined proc at worst_case_throughput=1 (expected to pass with 2 pipeline stages)"
@@ -83,7 +82,6 @@ echo "== IR convert: single dual-token proc"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${SINGLE_DUAL_TOKEN_IR}"
 
 echo "== Codegen check: single dual-token proc at worst_case_throughput=1 (expected to pass with reset)"
@@ -106,7 +104,6 @@ echo "== IR convert: single non-blocking proc"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${SINGLE_NONBLOCKING_IR}"
 
 echo "== Codegen check: single non-blocking proc at worst_case_throughput=1 (expected to pass with 1 pipeline stage)"
@@ -129,7 +126,6 @@ echo "== IR convert: split-stage procs"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${SEND_IR}"
 
 "${TOOLS_DIR}/ir_converter_main" \
@@ -138,7 +134,6 @@ echo "== IR convert: split-stage procs"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${RECV_IR}"
 
 echo "== Codegen check: split-stage procs at worst_case_throughput=1 (expected to pass)"
@@ -151,6 +146,7 @@ echo "== Codegen check: split-stage procs at worst_case_throughput=1 (expected t
   --delay_model=unit \
   --use_system_verilog \
   --worst_case_throughput=1 \
+  --reset=rst \
   --output_verilog_path="${SEND_SV}"
 
 "${TOOLS_DIR}/codegen_main" \
@@ -162,6 +158,7 @@ echo "== Codegen check: split-stage procs at worst_case_throughput=1 (expected t
   --delay_model=unit \
   --use_system_verilog \
   --worst_case_throughput=1 \
+  --reset=rst \
   --output_verilog_path="${RECV_SV}"
 
-echo "single-token single proc rejects WCT=1, single software-pipelined proc is schedulable at WCT=1 with 2 stages, single dual-token proc is schedulable at WCT=1 with reset, single non-blocking proc reaches WCT=1 with 1 stage, and split-stage procs also reach WCT=1"
+echo "sequential single proc rejects WCT=1, single software-pipelined proc is schedulable at WCT=1 with 2 stages, single dual-token proc is schedulable at WCT=1 with reset, single non-blocking proc reaches WCT=1 with 1 stage, and split-stage procs also reach WCT=1"

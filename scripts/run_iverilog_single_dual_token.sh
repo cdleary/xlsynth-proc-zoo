@@ -18,7 +18,6 @@ echo "== IR convert: single dual-token proc"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${SINGLE_IR}"
 
 echo "== Codegen: single dual-token proc"

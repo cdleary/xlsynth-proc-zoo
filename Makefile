@@ -1,4 +1,4 @@
-.PHONY: all dslx-test codegen-check rtl-sim rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-dual-token rtl-sim-single-nonblocking wave-analysis wave-sweep
+.PHONY: all dslx-test codegen-check rtl-sim rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-dual-token rtl-sim-single-nonblocking wave-analysis wave-sweep wave-io-kind-sweep
 
 all: dslx-test codegen-check rtl-sim
 
@@ -27,3 +27,6 @@ wave-analysis:
 
 wave-sweep:
 	bash scripts/run_ram_fetch_relu_sweep.sh
+
+wave-io-kind-sweep:
+	bash scripts/run_ram_fetch_relu_io_kind_sweep.sh

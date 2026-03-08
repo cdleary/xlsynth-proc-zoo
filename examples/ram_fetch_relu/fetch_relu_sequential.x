@@ -1,6 +1,6 @@
 // dslx_run_flags: --max_ticks=64
 //
-// Serialized single-proc baseline for "send address -> read RAM -> apply ReLU ->
+// Sequential single-proc baseline for "send address -> read RAM -> apply ReLU ->
 // send result". The main proc carries its token in state, so one activation must
 // complete `recv(addr) -> send(req) -> recv(resp) -> send(out)` before the next
 // activation can begin. This file is the semantic reference point, but for a
@@ -9,7 +9,7 @@
 import examples.ram_fetch_relu.fetch_relu_common;
 
 // Reads an address, waits for the RAM response, applies ReLU, and emits the result.
-proc FetchReluSingle {
+proc FetchReluSequential {
     addr_in: chan<u32> in;
     ram_req: chan<u32> out;
     ram_resp: chan<s32> in;
@@ -30,9 +30,9 @@ proc FetchReluSingle {
     }
 }
 
-// Wires the serialized single-proc example together for DSLX interpreter testing.
+// Wires the sequential single-proc example together for DSLX interpreter testing.
 #[test_proc]
-proc FetchReluSingleTest {
+proc FetchReluSequentialTest {
     terminator: chan<bool> out;
 
     config(terminator: chan<bool> out) {
@@ -42,7 +42,7 @@ proc FetchReluSingleTest {
         let (out_p, out_c) = chan<s32>("out");
 
         spawn fetch_relu_common::AddressSource(addr_p);
-        spawn FetchReluSingle(addr_c, req_p, resp_c, out_p);
+        spawn FetchReluSequential(addr_c, req_p, resp_c, out_p);
         spawn fetch_relu_common::FakeRam(req_c, resp_p);
         spawn fetch_relu_common::OutputChecker(terminator, out_c);
 

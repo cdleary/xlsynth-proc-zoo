@@ -14,3 +14,20 @@ require_cmd() {
     exit 1
   fi
 }
+
+append_codegen_io_flags() {
+  local -n args_ref="$1"
+
+  if [[ -n "${FLOP_INPUTS:-}" ]]; then
+    args_ref+=("--flop_inputs=${FLOP_INPUTS}")
+  fi
+  if [[ -n "${FLOP_OUTPUTS:-}" ]]; then
+    args_ref+=("--flop_outputs=${FLOP_OUTPUTS}")
+  fi
+  if [[ -n "${FLOP_INPUTS_KIND:-}" ]]; then
+    args_ref+=("--flop_inputs_kind=${FLOP_INPUTS_KIND}")
+  fi
+  if [[ -n "${FLOP_OUTPUTS_KIND:-}" ]]; then
+    args_ref+=("--flop_outputs_kind=${FLOP_OUTPUTS_KIND}")
+  fi
+}

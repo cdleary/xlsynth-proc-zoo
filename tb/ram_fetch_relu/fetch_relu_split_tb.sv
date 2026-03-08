@@ -32,7 +32,8 @@ module tb;
   wire out_ch_rdy;
 
   ram_fetch_relu_env #(
-      .HAS_RESET(1'b0),
+      .HAS_RESET(1'b1),
+      .RESET_CYCLES(3),
       .TIMEOUT_CYCLES(20),
       .HOLD_LAST_ADDR_VALID(1'b0)
   ) env (
@@ -54,6 +55,7 @@ module tb;
 
   __fetch_relu_split__SendAddr_0_next send_addr (
       .clk(clk),
+      .rst(rst),
       .fetch_relu_split__addr_in(addr_in),
       .fetch_relu_split__addr_in_vld(addr_in_vld),
       .fetch_relu_split__ram_req_rdy(ram_req_rdy),
@@ -64,6 +66,7 @@ module tb;
 
   __fetch_relu_split__RecvRelu_0_next recv_relu (
       .clk(clk),
+      .rst(rst),
       .fetch_relu_split__ram_resp(ram_resp),
       .fetch_relu_split__ram_resp_vld(ram_resp_vld),
       .fetch_relu_split__out_ch_rdy(out_ch_rdy),

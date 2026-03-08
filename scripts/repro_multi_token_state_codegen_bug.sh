@@ -13,7 +13,6 @@ echo "== IR convert"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${IR}"
 
 echo "== Codegen without reset (expected to fail with current XLS bug)"

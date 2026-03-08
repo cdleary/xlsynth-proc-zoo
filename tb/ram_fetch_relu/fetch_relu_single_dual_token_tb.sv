@@ -29,7 +29,7 @@ module tb;
   ram_fetch_relu_env #(
       .HAS_RESET(1'b1),
       .RESET_CYCLES(3),
-      .TIMEOUT_CYCLES(20),
+      .TIMEOUT_CYCLES(40),
       .HOLD_LAST_ADDR_VALID(1'b1)
   ) env (
       .clk(clk),

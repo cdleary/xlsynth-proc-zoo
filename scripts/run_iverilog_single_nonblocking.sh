@@ -11,6 +11,18 @@ SINGLE_SV="${BUILD_DIR}/fetch_relu_single_nonblocking.sv"
 SIM_OUT="${BUILD_DIR}/fetch_relu_single_nonblocking_tb.out"
 VCD_PATH="${VCD_PATH:-${BUILD_DIR}/fetch_relu_single_nonblocking_tb.vcd}"
 
+CODEGEN_ARGS=(
+  --top=__fetch_relu_single_nonblocking__FetchReluSingleNonBlocking_0_next
+  --generator=pipeline
+  --pipeline_stages=1
+  --clock_period_ps=1000
+  --delay_model=unit
+  --use_system_verilog
+  --worst_case_throughput=1
+  --reset=rst
+)
+append_codegen_io_flags CODEGEN_ARGS
+
 echo "== IR convert: single non-blocking proc"
 "${TOOLS_DIR}/ir_converter_main" \
   "${SINGLE_DSLX}" \
@@ -18,20 +30,12 @@ echo "== IR convert: single non-blocking proc"
   --dslx_path "${ROOT_DIR}" \
   --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
   --type_inference_v2 \
-  --proc_scoped_channels \
   --output_file="${SINGLE_IR}"
 
 echo "== Codegen: single non-blocking proc"
 "${TOOLS_DIR}/codegen_main" \
   "${SINGLE_IR}" \
-  --top=__fetch_relu_single_nonblocking__FetchReluSingleNonBlocking_0_next \
-  --generator=pipeline \
-  --pipeline_stages=1 \
-  --clock_period_ps=1000 \
-  --delay_model=unit \
-  --use_system_verilog \
-  --worst_case_throughput=1 \
-  --reset=rst \
+  "${CODEGEN_ARGS[@]}" \
   --output_verilog_path="${SINGLE_SV}"
 
 echo "== Icarus compile"

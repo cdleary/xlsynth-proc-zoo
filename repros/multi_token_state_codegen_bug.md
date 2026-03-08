@@ -17,6 +17,8 @@ bash scripts/repro_multi_token_state_codegen_bug.sh
 Current result:
 
 - `ir_converter_main` succeeds.
+- On newer toolchains, `--proc_scoped_channels` is retired and should be
+  omitted from the IR-converter command.
 - `codegen_main` fails with an internal error instead of producing RTL or a
   normal user-facing rejection.
 - The failure reproduces with a single output channel and a proc state of just

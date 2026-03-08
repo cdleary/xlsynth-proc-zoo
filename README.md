@@ -75,6 +75,13 @@ single-proc variants:
 make wave-sweep
 ```
 
+Run the boundary-buffering sweep that compares `flop`, `skid`, and
+`zerolatency` output kinds on representative variants:
+
+```sh
+make wave-io-kind-sweep
+```
+
 Run everything:
 
 ```sh
