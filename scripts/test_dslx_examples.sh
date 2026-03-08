@@ -5,6 +5,7 @@ source "$(dirname "$0")/common.sh"
 
 for example in \
   "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_sequential.x" \
+  "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_cold_steady_drain.x" \
   "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_dual_token.x" \
   "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_nonblocking.x" \
   "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_pipelined.x" \

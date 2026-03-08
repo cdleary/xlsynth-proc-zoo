@@ -47,6 +47,13 @@ Generate RTL for the single software-pipelined RAM+ReLU version and run its
 make rtl-sim-single-pipelined
 ```
 
+Generate RTL for the single cold/steady/drain RAM+ReLU version and run its
+`iverilog` testbench:
+
+```sh
+make rtl-sim-single-cold-steady-drain
+```
+
 Generate RTL for the single dual-token RAM+ReLU version and run its
 `iverilog` testbench:
 

@@ -47,6 +47,17 @@ VARIANTS: Dict[str, Variant] = {
         ],
         occupancy=["tb.dut.p0_valid"],
     ),
+    "single_cold_steady_drain": Variant(
+        name="single_cold_steady_drain",
+        reset="tb.rst",
+        interfaces=[
+            InterfaceSignals("addr_in", "tb.addr_in_vld", "tb.addr_in_rdy"),
+            InterfaceSignals("ram_req", "tb.ram_req_vld", "tb.ram_req_rdy"),
+            InterfaceSignals("ram_resp", "tb.ram_resp_vld", "tb.ram_resp_rdy"),
+            InterfaceSignals("out_ch", "tb.out_ch_vld", "tb.out_ch_rdy"),
+        ],
+        occupancy=[],
+    ),
     "single_nonblocking": Variant(
         name="single_nonblocking",
         reset="tb.rst",
