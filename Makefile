@@ -1,4 +1,4 @@
-.PHONY: all dslx-test codegen-check rtl-sim rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-nonblocking wave-analysis
+.PHONY: all dslx-test codegen-check rtl-sim rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-dual-token rtl-sim-single-nonblocking wave-analysis
 
 all: dslx-test codegen-check rtl-sim
 
@@ -8,13 +8,16 @@ dslx-test:
 codegen-check:
 	bash scripts/check_codegen_throughput.sh
 
-rtl-sim: rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-nonblocking
+rtl-sim: rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-dual-token rtl-sim-single-nonblocking
 
 rtl-sim-split:
 	bash scripts/run_iverilog_split.sh
 
 rtl-sim-single-pipelined:
 	bash scripts/run_iverilog_single_pipelined.sh
+
+rtl-sim-single-dual-token:
+	bash scripts/run_iverilog_single_dual_token.sh
 
 rtl-sim-single-nonblocking:
 	bash scripts/run_iverilog_single_nonblocking.sh
