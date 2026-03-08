@@ -21,6 +21,32 @@ that differs.
 | Non-blocking single proc | `fetch_relu_single_nonblocking.x` | One proc with blocking request issue and non-blocking response retirement | Reaches `worst_case_throughput=1` with one stage and is bubble-free in the repo's 1-cycle RAM harness |
 | Split design | `fetch_relu_split.x` | Request and response handled by separate procs | Reaches `worst_case_throughput=1` with one stage per proc |
 
+## Conceptual Model
+
+![Conceptual one-proc and two-proc forms](./proc_diagram.png)
+
+The diagram captures the ideal steady-state model for this family:
+
+- the true recurrence is the address state,
+- the RAM has a 1-cycle response latency,
+- in steady state one logical step should send `addr[i+1]` while also retiring
+  `data[i] -> f(data[i]) -> out[i]`.
+
+This is the conceptual split behind the variants:
+
+- `fetch_relu_sequential.x` does **not** match the ideal model, because the
+  whole transaction becomes the recurrence:
+  `recv(addr) -> send(req) -> recv(resp) -> send(out)`.
+- `fetch_relu_split.x` matches the diagram most directly: `SendAddr` carries
+  the address recurrence, while `RecvRelu` handles
+  `data -> f(data) -> out`.
+- `fetch_relu_single_nonblocking.x` is the closest single-proc approximation:
+  request issue keeps following the address recurrence, and response
+  retirement is optional on a given activation.
+- `fetch_relu_single_pipelined.x` and `fetch_relu_single_dual_token.x` are
+  attempts to express the same overlap inside one proc, but the generated RTL
+  still couples request progress to response/output progress.
+
 ## Diagram
 
 ```mermaid
