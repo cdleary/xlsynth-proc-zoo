@@ -66,6 +66,24 @@ iverilog -g2012 \
 
 echo "== Icarus run"
 VVP_ARGS=()
+if [[ -n "${TIMEOUT_CYCLES:-}" ]]; then
+  VVP_ARGS+=("+timeout_cycles=${TIMEOUT_CYCLES}")
+fi
+if [[ -n "${RAM_LATENCY:-}" ]]; then
+  VVP_ARGS+=("+ram_latency=${RAM_LATENCY}")
+fi
+if [[ -n "${RAM_REQ_STALL_PERIOD:-}" ]]; then
+  VVP_ARGS+=("+ram_req_stall_period=${RAM_REQ_STALL_PERIOD}")
+fi
+if [[ -n "${RAM_REQ_STALL_CYCLES:-}" ]]; then
+  VVP_ARGS+=("+ram_req_stall_cycles=${RAM_REQ_STALL_CYCLES}")
+fi
+if [[ -n "${OUT_CH_STALL_PERIOD:-}" ]]; then
+  VVP_ARGS+=("+out_ch_stall_period=${OUT_CH_STALL_PERIOD}")
+fi
+if [[ -n "${OUT_CH_STALL_CYCLES:-}" ]]; then
+  VVP_ARGS+=("+out_ch_stall_cycles=${OUT_CH_STALL_CYCLES}")
+fi
 if [[ "${DUMP_VCD:-0}" == "1" ]]; then
   echo "== VCD dump: ${VCD_PATH}"
   VVP_ARGS+=("+dump_vcd")

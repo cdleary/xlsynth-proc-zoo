@@ -90,6 +90,23 @@ In this family that means:
 - `fetch_relu_split.x`: **bubble-free**, because request traffic and
   response/output traffic live on separate token loops.
 
+## Sweep Results
+
+`make wave-sweep` compares `fetch_relu_split.x` and
+`fetch_relu_single_nonblocking.x` under fixed RAM latency and deterministic
+ready/valid stalls.
+
+The current result is:
+
+- Both variants stay bubble-free on request issue and output retirement for
+  fixed RAM latencies of 1, 2, and 3 cycles when the environment is otherwise
+  always ready.
+- Under output-channel backpressure, `fetch_relu_split.x` keeps the request
+  side bubble-free, while `fetch_relu_single_nonblocking.x` develops request
+  issue bubbles.
+- Under request-channel backpressure, both variants keep the request side
+  bubble-free; output gaps in that case are driven by upstream starvation.
+
 ## Notes
 
 - `fetch_relu_single.x` is the semantic baseline for the end-to-end transaction.
@@ -111,4 +128,5 @@ make rtl-sim-single-pipelined
 make rtl-sim-single-dual-token
 make rtl-sim-single-nonblocking
 make wave-analysis
+make wave-sweep
 ```

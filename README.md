@@ -68,6 +68,13 @@ gaps programmatically:
 make wave-analysis
 ```
 
+Run the latency/backpressure sweep that compares the split and non-blocking
+single-proc variants:
+
+```sh
+make wave-sweep
+```
+
 Run everything:
 
 ```sh

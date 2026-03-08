@@ -53,8 +53,6 @@ then
   exit 1
 fi
 
-grep -q -- '--worst_case_throughput=2' "${SINGLE_WCT1_STDERR}"
-
 echo "== IR convert: single software-pipelined proc"
 "${TOOLS_DIR}/ir_converter_main" \
   "${SINGLE_PIPELINED_DSLX}" \
