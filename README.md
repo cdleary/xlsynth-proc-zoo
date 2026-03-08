@@ -1,0 +1,74 @@
+# xlsynth-proc-zoo
+
+Small standalone XLS/XLSynth proc families that compare different formulations
+of the same behavior and their codegen and scheduling consequences.
+
+Current family:
+
+- `examples/ram_fetch_relu/`: stream addresses to a RAM-like interface, receive
+  signed data back, apply ReLU, and emit the result on an output stream
+
+The detailed comparison for the RAM+ReLU family lives in
+`examples/ram_fetch_relu/README.md`.
+
+## Prerequisites
+
+- `XLSYNTH_TOOLS` must point at an xlsynth tools bundle containing:
+  - `dslx_interpreter_main`
+  - `ir_converter_main`
+  - `codegen_main`
+- `iverilog` and `vvp` must be installed for the RTL simulation targets.
+
+## Quick Start
+
+Run the DSLX proc tests:
+
+```sh
+make dslx-test
+```
+
+Check the codegen throughput behavior:
+
+```sh
+make codegen-check
+```
+
+Generate RTL for the split-stage RAM+ReLU version and run its `iverilog`
+testbench:
+
+```sh
+make rtl-sim-split
+```
+
+Generate RTL for the single software-pipelined RAM+ReLU version and run its
+`iverilog` testbench:
+
+```sh
+make rtl-sim-single-pipelined
+```
+
+Generate RTL for the single non-blocking RAM+ReLU version and run its
+`iverilog` testbench:
+
+```sh
+make rtl-sim-single-nonblocking
+```
+
+Generate waveform dumps for the RAM+ReLU RTL examples and report handshake
+gaps programmatically:
+
+```sh
+make wave-analysis
+```
+
+Run everything:
+
+```sh
+make
+```
+
+## Layout
+
+- `examples/ram_fetch_relu/`: DSLX variants and the family-specific README
+- `tb/ram_fetch_relu/`: small RTL smoke tests for the generated SystemVerilog
+- `scripts/`: helper scripts that build and simulate the current families
