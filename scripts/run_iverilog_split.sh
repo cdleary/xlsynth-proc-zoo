@@ -59,6 +59,7 @@ echo "== Codegen: RecvRelu"
 echo "== Icarus compile"
 iverilog -g2012 \
   -o "${SIM_OUT}" \
+  "${ROOT_DIR}/tb/ram_fetch_relu/fetch_relu_tb_support.sv" \
   "${ROOT_DIR}/tb/ram_fetch_relu/fetch_relu_split_tb.sv" \
   "${SEND_SV}" \
   "${RECV_SV}"

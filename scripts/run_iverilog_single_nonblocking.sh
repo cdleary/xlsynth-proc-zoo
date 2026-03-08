@@ -37,6 +37,7 @@ echo "== Codegen: single non-blocking proc"
 echo "== Icarus compile"
 iverilog -g2012 \
   -o "${SIM_OUT}" \
+  "${ROOT_DIR}/tb/ram_fetch_relu/fetch_relu_tb_support.sv" \
   "${ROOT_DIR}/tb/ram_fetch_relu/fetch_relu_single_nonblocking_tb.sv" \
   "${SINGLE_SV}"
 
