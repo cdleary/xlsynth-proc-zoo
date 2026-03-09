@@ -23,6 +23,21 @@ that differs.
 | Non-blocking internal-counter single proc | `fetch_relu_single_nonblocking_internal_counter.x` | Same non-blocking shape, but with the address recurrence kept inside the proc | No: uses `recv_non_blocking` | Reaches `worst_case_throughput=1` with one stage and is bubble-free in the repo's 1-cycle RAM harness |
 | Split design | `fetch_relu_split.x` | Request and response handled by separate procs | Yes: blocking/timing-insensitive | Reaches `worst_case_throughput=1` with one stage per proc |
 
+## Characterization Matrix
+
+This family is intended as a small characterization zoo for common proc-writing
+patterns around latency boundaries.
+
+| Pattern | Representative file | Blocking frontiers per steady-state step | Address recurrence lives in | Nominal result |
+| --- | --- | --- | --- | --- |
+| Serialized transaction | `fetch_relu_sequential.x` | One monolithic frontier | Same proc | Sequential, not bubble-free |
+| Scheduled overlap in one proc | `fetch_relu_single_pipelined.x` | Two logical frontiers, still one lowered pipeline | External source proc | Schedulable at `WCT=1`, still bubbles |
+| Explicit fill/drain FSM | `fetch_relu_single_cold_steady_drain.x` | Two logical frontiers plus prologue/epilogue | External source proc | Still bubbles in steady state |
+| Multiple token lanes | `fetch_relu_single_dual_token.x` | Two tokenized frontiers in one proc | External source proc | Still bubbles |
+| Non-blocking escape hatch | `fetch_relu_single_nonblocking.x` | Request frontier plus optional response frontier | External source proc | Bubble-free, non-KPN |
+| Non-blocking self-contained | `fetch_relu_single_nonblocking_internal_counter.x` | Request frontier plus optional response frontier | Same proc | Bubble-free, non-KPN |
+| Split frontiers into procs | `fetch_relu_split.x` | One blocking frontier per proc | Separate proc for address side | Bubble-free, KPN |
+
 ## Conceptual Model
 
 ![Conceptual one-proc and two-proc forms](./proc_diagram.png)

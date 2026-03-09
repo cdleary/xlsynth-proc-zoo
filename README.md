@@ -3,6 +3,9 @@
 Small standalone XLS/XLSynth proc families that compare different formulations
 of the same behavior and their codegen and scheduling consequences.
 
+The goal is not only to provide examples, but to characterize recurring proc
+patterns and how the current XLS/XLSynth toolchain pipelines them in practice.
+
 Current family:
 
 - `examples/ram_fetch_relu/`: stream addresses to a RAM-like interface, receive
