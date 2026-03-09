@@ -6,13 +6,17 @@ of the same behavior and their codegen and scheduling consequences.
 The goal is not only to provide examples, but to characterize recurring proc
 patterns and how the current XLS/XLSynth toolchain pipelines them in practice.
 
-Current family:
+Current families:
 
 - `examples/ram_fetch_relu/`: stream addresses to a RAM-like interface, receive
   signed data back, apply ReLU, and emit the result on an output stream
+- `examples/send_recv_patterns/`: small micro-patterns for seeing how the
+  current toolchain groups blocking and non-blocking channel ops into stages
 
 The detailed comparison for the RAM+ReLU family lives in
 `examples/ram_fetch_relu/README.md`.
+The schedule-focused send/recv micro-pattern family lives in
+`examples/send_recv_patterns/README.md`.
 
 ## Prerequisites
 
@@ -99,6 +103,12 @@ Run the boundary-buffering sweep that compares `flop`, `skid`, and
 make wave-io-kind-sweep
 ```
 
+Generate per-pattern schedules for the small send/recv staging family:
+
+```sh
+make characterize-send-recv-patterns
+```
+
 Run everything:
 
 ```sh
@@ -108,5 +118,6 @@ make
 ## Layout
 
 - `examples/ram_fetch_relu/`: DSLX variants and the family-specific README
+- `examples/send_recv_patterns/`: small DSLX proc-shape micro-benchmarks
 - `tb/ram_fetch_relu/`: small RTL smoke tests for the generated SystemVerilog
 - `scripts/`: helper scripts that build and simulate the current families

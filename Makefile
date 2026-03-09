@@ -1,4 +1,4 @@
-.PHONY: all dslx-test codegen-check rtl-sim rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-cold-steady-drain rtl-sim-single-dual-token rtl-sim-single-nonblocking rtl-sim-single-nonblocking-internal-counter wave-analysis wave-sweep wave-io-kind-sweep
+.PHONY: all dslx-test codegen-check rtl-sim rtl-sim-split rtl-sim-single-pipelined rtl-sim-single-cold-steady-drain rtl-sim-single-dual-token rtl-sim-single-nonblocking rtl-sim-single-nonblocking-internal-counter wave-analysis wave-sweep wave-io-kind-sweep characterize-send-recv-patterns
 
 all: dslx-test codegen-check rtl-sim
 
@@ -36,3 +36,6 @@ wave-sweep:
 
 wave-io-kind-sweep:
 	bash scripts/run_ram_fetch_relu_io_kind_sweep.sh
+
+characterize-send-recv-patterns:
+	bash scripts/characterize_send_recv_patterns.sh

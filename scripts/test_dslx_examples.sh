@@ -10,7 +10,8 @@ for example in \
   "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_nonblocking.x" \
   "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_nonblocking_internal_counter.x" \
   "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_pipelined.x" \
-  "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_split.x"
+  "${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_split.x" \
+  "${ROOT_DIR}/examples/send_recv_patterns/send_recv_patterns.x"
 do
   echo "== DSLX interpreter test: ${example}"
   "${TOOLS_DIR}/dslx_interpreter_main" \
