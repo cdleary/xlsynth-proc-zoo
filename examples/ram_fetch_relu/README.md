@@ -1,6 +1,6 @@
 # RAM Fetch ReLU
 
-This family implements the same behavior in six formulations:
+This family implements the same behavior in seven formulations:
 
 1. send an address toward a RAM-like interface
 2. receive signed data back
@@ -13,14 +13,15 @@ that differs.
 
 ## Variants
 
-| Variant | File | Shape | Throughput result |
-| --- | --- | --- | --- |
-| Sequential single proc | `fetch_relu_sequential.x` | One proc with one loop-carried token chain | Fails `worst_case_throughput=1` for a 1-cycle RAM |
-| Software-pipelined single proc | `fetch_relu_single_pipelined.x` | One proc with unit state and a fresh `token()` each activation | Scheduler accepts `worst_case_throughput=1` with `--pipeline_stages=2` and reset, but current RTL wave analysis still shows interface bubbles |
-| Cold/steady/drain single proc | `fetch_relu_single_cold_steady_drain.x` | One proc with explicit fill, steady-state overlap, and drain phases | Scheduler accepts `worst_case_throughput=1` with one stage, but current RTL wave analysis still shows interface bubbles |
-| Dual-token single proc | `fetch_relu_single_dual_token.x` | One proc with separate carried token lanes for request and response | Reset-enabled codegen reaches `worst_case_throughput=1`, but current RTL still shows interface bubbles; the cleaner multi-token state shape also exposes an XLS codegen bug |
-| Non-blocking single proc | `fetch_relu_single_nonblocking.x` | One proc with blocking request issue and non-blocking response retirement | Reaches `worst_case_throughput=1` with one stage and is bubble-free in the repo's 1-cycle RAM harness |
-| Split design | `fetch_relu_split.x` | Request and response handled by separate procs | Reaches `worst_case_throughput=1` with one stage per proc |
+| Variant | File | Shape | KPN style? | Throughput result |
+| --- | --- | --- | --- | --- |
+| Sequential single proc | `fetch_relu_sequential.x` | One proc with one loop-carried token chain | Yes: blocking/timing-insensitive | Fails `worst_case_throughput=1` for a 1-cycle RAM |
+| Software-pipelined single proc | `fetch_relu_single_pipelined.x` | One proc with unit state and a fresh `token()` each activation | Yes: blocking/timing-insensitive | Scheduler accepts `worst_case_throughput=1` with `--pipeline_stages=2` and reset, but current RTL wave analysis still shows interface bubbles |
+| Cold/steady/drain single proc | `fetch_relu_single_cold_steady_drain.x` | One proc with explicit fill, steady-state overlap, and drain phases | Yes: blocking/timing-insensitive | Scheduler accepts `worst_case_throughput=1` with one stage, but current RTL wave analysis still shows interface bubbles |
+| Dual-token single proc | `fetch_relu_single_dual_token.x` | One proc with separate carried token lanes for request and response | Yes: blocking/timing-insensitive | Reset-enabled codegen reaches `worst_case_throughput=1`, but current RTL still shows interface bubbles; the cleaner multi-token state shape also exposes an XLS codegen bug |
+| Non-blocking single proc | `fetch_relu_single_nonblocking.x` | One proc with blocking request issue and non-blocking response retirement | No: uses `recv_non_blocking` | Reaches `worst_case_throughput=1` with one stage and is bubble-free in the repo's 1-cycle RAM harness |
+| Non-blocking internal-counter single proc | `fetch_relu_single_nonblocking_internal_counter.x` | Same non-blocking shape, but with the address recurrence kept inside the proc | No: uses `recv_non_blocking` | Reaches `worst_case_throughput=1` with one stage and is bubble-free in the repo's 1-cycle RAM harness |
+| Split design | `fetch_relu_split.x` | Request and response handled by separate procs | Yes: blocking/timing-insensitive | Reaches `worst_case_throughput=1` with one stage per proc |
 
 ## Conceptual Model
 
@@ -47,10 +48,31 @@ This is the conceptual split behind the variants:
 - `fetch_relu_single_nonblocking.x` is the closest single-proc approximation:
   request issue keeps following the address recurrence, and response
   retirement is optional on a given activation.
+- `fetch_relu_single_nonblocking_internal_counter.x` is the same
+  single-proc/non-blocking idea with the address recurrence moved back inside
+  the proc, which makes it the smallest self-contained example of the intended
+  steady-state behavior.
 - `fetch_relu_single_pipelined.x`, `fetch_relu_single_cold_steady_drain.x`, and
   `fetch_relu_single_dual_token.x` are attempts to express the same overlap
   inside one proc, but the generated RTL still couples request progress to
   response/output progress.
+
+## KPN Compatibility
+
+The blocking variants in this family stay in the timing-insensitive,
+KPN-compatible style: they use blocking `recv` and ordinary `send`, so they do
+not let the proc observe whether a channel is empty "right now".
+
+The two non-blocking variants are different:
+
+- `fetch_relu_single_nonblocking.x`
+- `fetch_relu_single_nonblocking_internal_counter.x`
+
+They use `recv_non_blocking`, which XLS explicitly documents as a non-KPN,
+timing-sensitive operation. That is why they can express "issue the next RAM
+request anyway, and only retire a response if one is present", but it also
+means correctness depends more directly on the chosen schedule and final RTL
+implementation.
 
 ## Diagram
 
@@ -129,6 +151,9 @@ In this family that means:
 - `fetch_relu_single_nonblocking.x`: **bubble-free**, in the repo's 1-cycle RAM
   harness, because `recv_non_blocking` and `send_if` make response retirement
   optional for a given activation.
+- `fetch_relu_single_nonblocking_internal_counter.x`: **bubble-free**, in the
+  same nominal harness, and useful when you want to read the core idea without
+  a separate address-source proc.
 - `fetch_relu_split.x`: **bubble-free**, because request traffic and
   response/output traffic live on separate token loops.
 
@@ -155,7 +180,8 @@ In this family that means:
   and `fetch_relu_single_dual_token.x` can be scheduled at
   `worst_case_throughput=1`, but the generated RTL still self-bubbles at the
   interfaces in the nominal harness.
-- `fetch_relu_single_nonblocking.x` and `fetch_relu_split.x` both reach
+- `fetch_relu_single_nonblocking_internal_counter.x`,
+  `fetch_relu_single_nonblocking.x`, and `fetch_relu_split.x` all reach
   `worst_case_throughput=1` and are also interface bubble-free in the nominal
   harness.
 
@@ -227,6 +253,9 @@ So the conceptual split is:
 - `make wave-analysis` currently shows that the generated single-proc pipelined RTL still accepts `ram_req` and emits `out_ch` with three-cycle gaps in this 1-cycle RAM harness, even though its internal `p0_valid` occupancy stays full.
 - `fetch_relu_single_dual_token.x` tests whether separate carried token lanes inside one proc behave like the split design. In the current toolchain they do not: the reset-enabled RTL still bubbles, and a smaller multi-token-state reproducer in `repros/multi_token_state_codegen_bug.x` exposes a related XLS internal codegen error.
 - `fetch_relu_single_nonblocking.x` is the current single-proc formulation that actually stays bubble-free at the interface in this harness by making the response side optional with `recv_non_blocking` and `send_if`.
+- `fetch_relu_single_nonblocking_internal_counter.x` expresses the same
+  bubble-free single-proc idea with fewer moving pieces, because the proc owns
+  its address counter instead of receiving addresses from a helper proc.
 - `fetch_relu_split.x` is the most direct throughput-friendly formulation and the easiest to reason about in RTL.
 
 ## Repo Targets
@@ -241,6 +270,7 @@ make rtl-sim-single-pipelined
 make rtl-sim-single-cold-steady-drain
 make rtl-sim-single-dual-token
 make rtl-sim-single-nonblocking
+make rtl-sim-single-nonblocking-internal-counter
 make wave-analysis
 make wave-sweep
 make wave-io-kind-sweep

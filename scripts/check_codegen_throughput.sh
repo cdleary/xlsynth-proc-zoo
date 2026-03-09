@@ -24,6 +24,10 @@ SINGLE_NONBLOCKING_DSLX="${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_n
 SINGLE_NONBLOCKING_IR="${BUILD_DIR}/fetch_relu_single_nonblocking.ir"
 SINGLE_NONBLOCKING_SV="${BUILD_DIR}/fetch_relu_single_nonblocking.sv"
 
+SINGLE_NONBLOCKING_INTERNAL_COUNTER_DSLX="${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_single_nonblocking_internal_counter.x"
+SINGLE_NONBLOCKING_INTERNAL_COUNTER_IR="${BUILD_DIR}/fetch_relu_single_nonblocking_internal_counter.ir"
+SINGLE_NONBLOCKING_INTERNAL_COUNTER_SV="${BUILD_DIR}/fetch_relu_single_nonblocking_internal_counter.sv"
+
 SPLIT_DSLX="${ROOT_DIR}/examples/ram_fetch_relu/fetch_relu_split.x"
 SEND_IR="${BUILD_DIR}/fetch_relu_split_send_addr.ir"
 RECV_IR="${BUILD_DIR}/fetch_relu_split_recv_relu.ir"
@@ -145,6 +149,28 @@ echo "== Codegen check: single non-blocking proc at worst_case_throughput=1 (exp
   --reset=rst \
   --output_verilog_path="${SINGLE_NONBLOCKING_SV}"
 
+echo "== IR convert: single non-blocking proc with internal counter"
+"${TOOLS_DIR}/ir_converter_main" \
+  "${SINGLE_NONBLOCKING_INTERNAL_COUNTER_DSLX}" \
+  --top=FetchReluSingleNonBlockingInternalCounter \
+  --dslx_path "${ROOT_DIR}" \
+  --dslx_stdlib_path "${DSLX_STDLIB_PATH}" \
+  --type_inference_v2 \
+  --output_file="${SINGLE_NONBLOCKING_INTERNAL_COUNTER_IR}"
+
+echo "== Codegen check: single non-blocking proc with internal counter at worst_case_throughput=1 (expected to pass with 1 pipeline stage)"
+"${TOOLS_DIR}/codegen_main" \
+  "${SINGLE_NONBLOCKING_INTERNAL_COUNTER_IR}" \
+  --top=__fetch_relu_single_nonblocking_internal_counter__FetchReluSingleNonBlockingInternalCounter_0_next \
+  --generator=pipeline \
+  --pipeline_stages=1 \
+  --clock_period_ps=1000 \
+  --delay_model=unit \
+  --use_system_verilog \
+  --worst_case_throughput=1 \
+  --reset=rst \
+  --output_verilog_path="${SINGLE_NONBLOCKING_INTERNAL_COUNTER_SV}"
+
 echo "== IR convert: split-stage procs"
 "${TOOLS_DIR}/ir_converter_main" \
   "${SPLIT_DSLX}" \
@@ -187,4 +213,4 @@ echo "== Codegen check: split-stage procs at worst_case_throughput=1 (expected t
   --reset=rst \
   --output_verilog_path="${RECV_SV}"
 
-echo "sequential single proc rejects WCT=1, single software-pipelined proc is schedulable at WCT=1 with 2 stages, single cold/steady/drain proc is schedulable at WCT=1 with 1 stage, single dual-token proc is schedulable at WCT=1 with reset, single non-blocking proc reaches WCT=1 with 1 stage, and split-stage procs also reach WCT=1"
+echo "sequential single proc rejects WCT=1, single software-pipelined proc is schedulable at WCT=1 with 2 stages, single cold/steady/drain proc is schedulable at WCT=1 with 1 stage, single dual-token proc is schedulable at WCT=1 with reset, both single non-blocking procs reach WCT=1 with 1 stage, and split-stage procs also reach WCT=1"

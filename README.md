@@ -68,6 +68,13 @@ Generate RTL for the single non-blocking RAM+ReLU version and run its
 make rtl-sim-single-nonblocking
 ```
 
+Generate RTL for the single non-blocking RAM+ReLU version with an internal
+address counter and run its `iverilog` testbench:
+
+```sh
+make rtl-sim-single-nonblocking-internal-counter
+```
+
 Generate waveform dumps for the RAM+ReLU RTL examples and report handshake
 gaps programmatically:
 

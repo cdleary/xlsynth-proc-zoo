@@ -69,6 +69,16 @@ VARIANTS: Dict[str, Variant] = {
         ],
         occupancy=[],
     ),
+    "single_nonblocking_internal_counter": Variant(
+        name="single_nonblocking_internal_counter",
+        reset="tb.rst",
+        interfaces=[
+            InterfaceSignals("ram_req", "tb.ram_req_vld", "tb.ram_req_rdy"),
+            InterfaceSignals("ram_resp", "tb.ram_resp_vld", "tb.ram_resp_rdy"),
+            InterfaceSignals("out_ch", "tb.out_ch_vld", "tb.out_ch_rdy"),
+        ],
+        occupancy=[],
+    ),
     "single_dual_token": Variant(
         name="single_dual_token",
         reset="tb.rst",
