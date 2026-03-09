@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+//
 // dslx_run_flags: --max_ticks=64
 //
 // Split request/response formulation of the same RAM-read-plus-ReLU pipeline.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+//
 // Shared support code for the RAM+ReLU family.
 // These helpers keep the example variants focused on their top-level proc
 // formulation while reusing the same address source, fake RAM, and checker.

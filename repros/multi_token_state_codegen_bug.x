@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+//
 // Minimal reproducer for XLS codegen failing on a proc whose carried state
 // contains more than one token.
 

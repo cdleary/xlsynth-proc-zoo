@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+//
 // dslx_run_flags: --max_ticks=64
 //
 // Single-proc phased formulation with explicit cold-start, steady-state, and
