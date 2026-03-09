@@ -81,6 +81,44 @@ proc ParallelTwoRecvsThenSend {
     }
 }
 
+// Two sends serialized on one token chain.
+proc SerialTwoSends {
+    left_out: chan<u32> out;
+    right_out: chan<u32> out;
+
+    config(left_out: chan<u32> out, right_out: chan<u32> out) {
+        (left_out, right_out)
+    }
+
+    init { u32:0 }
+
+    next(counter: u32) {
+        let tok = token();
+        let tok = send(tok, left_out, counter);
+        let _tok = send(tok, right_out, counter + u32:1);
+        counter + u32:1
+    }
+}
+
+// Two sends on separate token lanes that rejoin before activation completion.
+proc ParallelTwoSends {
+    left_out: chan<u32> out;
+    right_out: chan<u32> out;
+
+    config(left_out: chan<u32> out, right_out: chan<u32> out) {
+        (left_out, right_out)
+    }
+
+    init { u32:0 }
+
+    next(counter: u32) {
+        let left_tok = send(token(), left_out, counter);
+        let right_tok = send(token(), right_out, counter + u32:1);
+        let _tok = join(left_tok, right_tok);
+        counter + u32:1
+    }
+}
+
 // A blocking round-trip shape: send a request, wait for a response, then send an output.
 proc BlockingRoundTrip {
     req_ch: chan<u32> out;
@@ -98,6 +136,27 @@ proc BlockingRoundTrip {
         let tok = send(tok, req_ch, counter);
         let (tok, resp) = recv(tok, resp_ch);
         let _tok = send(tok, out_ch, resp + u32:1);
+        counter + u32:1
+    }
+}
+
+// A mixed-lane round-trip: send the request and receive the response on separate token lanes.
+proc ParallelSendRecvThenSend {
+    req_ch: chan<u32> out;
+    resp_ch: chan<u32> in;
+    out_ch: chan<u32> out;
+
+    config(req_ch: chan<u32> out, resp_ch: chan<u32> in, out_ch: chan<u32> out) {
+        (req_ch, resp_ch, out_ch)
+    }
+
+    init { u32:0 }
+
+    next(counter: u32) {
+        let req_tok = send(token(), req_ch, counter);
+        let (resp_tok, resp) = recv(token(), resp_ch);
+        let out_tok = join(req_tok, resp_tok);
+        let _tok = send(out_tok, out_ch, resp + u32:1);
         counter + u32:1
     }
 }

@@ -48,7 +48,10 @@ RecvThenSend|2
 SendThenRecv|2
 SerialTwoRecvsThenSend|2
 ParallelTwoRecvsThenSend|2
+SerialTwoSends|2
+ParallelTwoSends|2
 BlockingRoundTrip|2
+ParallelSendRecvThenSend|2
 NonBlockingRoundTrip|2
 EOF
 
