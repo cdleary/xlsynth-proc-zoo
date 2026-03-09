@@ -74,6 +74,41 @@ request anyway, and only retire a response if one is present", but it also
 means correctness depends more directly on the chosen schedule and final RTL
 implementation.
 
+## Why No Monolithic Bubble-Free KPN Variant?
+
+In principle, a single-proc blocking/KPN formulation looks plausible: after
+fill, steady state should be able to issue `req[i+1]` while retiring
+`resp[i] -> out[i]`.
+
+In the current XLS toolchain, however, the proc lowering path builds one
+in-order elastic pipeline for the whole proc. That has an important
+consequence:
+
+- a blocking receive in a later stage contributes to that stage's `stage_done`
+- earlier stages are only allowed to advance when the next stage is empty or
+  done
+
+So if a monolithic proc puts `recv(ram_resp)` in a later stage, then waiting
+for the RAM response becomes part of the condition for launching the next
+request. That is exactly the self-coupling seen in
+`fetch_relu_single_pipelined.x`,
+`fetch_relu_single_cold_steady_drain.x`, and
+`fetch_relu_single_dual_token.x`.
+
+By contrast, `recv_non_blocking` changes the lowering shape: to the rest of the
+pipeline, a non-blocking receive is treated as always valid, so the activation
+can keep moving even when no response is present. That is why the single-proc
+non-blocking variants can stay bubble-free.
+
+So the current conclusion is:
+
+- bubble-free + KPN is achievable in this family with the split design
+- bubble-free + single proc is achievable with the non-KPN non-blocking design
+- bubble-free + single proc + KPN has not been realized in this toolchain yet
+
+This should be read as a current implementation/lowering limitation, not as a
+proof that single-proc KPN semantics can never express the behavior.
+
 ## Diagram
 
 ```mermaid
@@ -124,6 +159,32 @@ flowchart TD
         T2 --> T3[RecvRelu proc]
     end
 ```
+
+## Composition Rules of Thumb
+
+If you want bubble-free steady state while staying in the blocking/KPN style,
+the most useful rule of thumb from this family is:
+
+- put each independently advancing blocking frontier in its own proc
+
+For this RAM example, the two frontiers are:
+
+- request issue: `addr -> ram_req`
+- response retirement: `ram_resp -> relu -> out`
+
+Those advance at different logical times in steady state. If a single blocking
+proc activation has to cover both of them, then the later blocking receive can
+throttle the earlier request issue. Splitting them into separate procs keeps the
+true recurrences separate and gives the scheduler/codegen a much easier problem.
+
+So the practical guidance is:
+
+- if two blocking channel interactions belong to different steady-state phases,
+  split them into different procs
+- keep each proc's carried state aligned to its true recurrence
+- connect phases with feed-forward channels
+- use `recv_non_blocking` only when you intentionally want the single-proc,
+  timing-sensitive escape hatch
 
 ## Bubble-Freeness
 
