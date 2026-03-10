@@ -109,6 +109,12 @@ Generate per-pattern schedules for the small send/recv staging family:
 make characterize-send-recv-patterns
 ```
 
+Check how the current RAM harness behaves for request-to-response latency:
+
+```sh
+make ram-latency-check
+```
+
 Run everything:
 
 ```sh
